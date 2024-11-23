@@ -23,3 +23,8 @@
 .market-overview {
   @apply glass-card p-6 h-full;
 }
+
+/* Prevent scrolling when in full view */
+body:has(.fixed.inset-0) {
+  @apply overflow-hidden;
+}
