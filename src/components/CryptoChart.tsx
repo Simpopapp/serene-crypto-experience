@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -8,9 +8,25 @@ declare global {
 
 export const CryptoChart = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   useEffect(() => {
-    if (containerRef.current) {
+    const script = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
+    
+    if (!script) {
+      const newScript = document.createElement('script');
+      newScript.type = 'text/javascript';
+      newScript.src = 'https://s3.tradingview.com/tv.js';
+      newScript.async = true;
+      newScript.onload = () => setIsScriptLoaded(true);
+      document.head.appendChild(newScript);
+    } else {
+      setIsScriptLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isScriptLoaded && containerRef.current && window.TradingView) {
       new window.TradingView.widget({
         container_id: "tradingview_widget",
         symbol: "BINANCE:BTCUSDT",
@@ -29,7 +45,7 @@ export const CryptoChart = () => {
         height: "100%"
       });
     }
-  }, []);
+  }, [isScriptLoaded]);
 
   return (
     <div className="crypto-chart">
