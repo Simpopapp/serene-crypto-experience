@@ -1,11 +1,36 @@
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useEffect, useRef } from "react";
 
-const dummyData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-  price: 45000 + Math.random() * 5000
-}));
+declare global {
+  interface Window {
+    TradingView: any;
+  }
+}
 
 export const CryptoChart = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      new window.TradingView.widget({
+        container_id: "tradingview_widget",
+        symbol: "BINANCE:BTCUSDT",
+        interval: "D",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        toolbar_bg: "#141413",
+        enable_publishing: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: true,
+        backgroundColor: "#141413",
+        gridColor: "#ffffff14",
+        width: "100%",
+        height: "100%"
+      });
+    }
+  }, []);
+
   return (
     <div className="crypto-chart">
       <div className="flex justify-between items-center mb-6">
@@ -17,44 +42,7 @@ export const CryptoChart = () => {
           Full View →
         </button>
       </div>
-      
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={dummyData}>
-          <defs>
-            <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#C7FB76" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#C7FB76" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <XAxis 
-            dataKey="date" 
-            stroke="#C4C3BB" 
-            fontSize={12}
-            tickLine={false}
-          />
-          <YAxis 
-            stroke="#C4C3BB"
-            fontSize={12}
-            tickLine={false}
-            tickFormatter={(value) => `$${value.toLocaleString()}`}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              background: '#141413',
-              border: '1px solid #ffffff33',
-              borderRadius: '8px',
-              fontSize: '12px'
-            }}
-          />
-          <Area
-            type="monotone"
-            dataKey="price"
-            stroke="#C7FB76"
-            fillOpacity={1}
-            fill="url(#colorPrice)"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div id="tradingview_widget" ref={containerRef} className="h-[300px]" />
     </div>
   );
 };
