@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PriceCard } from "@/components/PriceCard";
 import { CryptoChart } from "@/components/CryptoChart";
 import { MarketOverview } from "@/components/MarketOverview";
+import { SplashScreen } from "@/components/SplashScreen";
 
 const fetchTopCryptos = async () => {
   const response = await fetch(
@@ -27,11 +29,16 @@ const getCryptoIcon = (symbol: string) => {
 };
 
 const Index = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const { data: cryptoData, isLoading } = useQuery({
     queryKey: ['topCryptos'],
     queryFn: fetchTopCryptos,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
+
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
 
   return (
     <div className="min-h-screen p-6 md:p-8">
