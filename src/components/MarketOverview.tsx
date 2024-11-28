@@ -9,6 +9,8 @@ interface CryptoPrice {
   price_change_percentage_24h: number;
 }
 
+const COINGECKO_API_KEY = 'CG-Lf8z7DuzTQDxQDXNF5H3VkLh'; // Free API key
+
 const fetchCryptoData = async () => {
   const response = await fetch(
     "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=4&page=1&sparkline=false",
@@ -16,11 +18,15 @@ const fetchCryptoData = async () => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-cg-demo-api-key': COINGECKO_API_KEY
       }
     }
   );
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Rate limit exceeded. Please try again later.');
+    }
     throw new Error('Network response was not ok');
   }
   return response.json();
