@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface CryptoPrice {
   id: string;
@@ -9,34 +10,44 @@ interface CryptoPrice {
   price_change_percentage_24h: number;
 }
 
-const COINGECKO_API_KEY = 'CG-Lf8z7DuzTQDxQDXNF5H3VkLh'; // Free API key
-
 const fetchCryptoData = async () => {
-  const response = await fetch(
-    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=4&page=1&sparkline=false",
-    {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'x-cg-demo-api-key': COINGECKO_API_KEY
+  try {
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&include_24hr_change=true",
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
-  );
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('Rate limit exceeded. Please try again later.');
-    }
-    throw new Error('Network response was not ok');
+    
+    const data = await response.json();
+    
+    // Transform the data to match our expected format
+    const cryptoList = [
+      { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', current_price: data.bitcoin.usd, price_change_percentage_24h: data.bitcoin.usd_24h_change },
+      { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', current_price: data.ethereum.usd, price_change_percentage_24h: data.ethereum.usd_24h_change },
+      { id: 'tether', name: 'Tether', symbol: 'USDT', current_price: data.tether.usd, price_change_percentage_24h: data.tether.usd_24h_change },
+      { id: 'binancecoin', name: 'BNB', symbol: 'BNB', current_price: data.binancecoin.usd, price_change_percentage_24h: data.binancecoin.usd_24h_change }
+    ];
+    
+    return cryptoList;
+  } catch (error) {
+    toast.error("Failed to fetch market data. Please try again later.");
+    throw error;
   }
-  return response.json();
 };
 
 export const MarketOverview = () => {
   const { data: cryptoList, isLoading, error } = useQuery({
     queryKey: ['cryptoMarkets'],
     queryFn: fetchCryptoData,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
   if (isLoading) {
